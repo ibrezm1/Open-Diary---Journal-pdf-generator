@@ -329,5 +329,5 @@ class DiaryGenerator:
         print(f"Saved as {self.filename}")
 
 if __name__ == "__main__":
-    my_diary = DiaryGenerator(2025, "2025_Planner_Diary_With_Quotes.pdf")
+    my_diary = DiaryGenerator(2026, "2026_Planner_Diary_With_Quotes.pdf")
     my_diary.generate()
