@@ -3,3 +3,4 @@ reportlab
 google-generativeai
 python-dotenv
 pillow
+openai
