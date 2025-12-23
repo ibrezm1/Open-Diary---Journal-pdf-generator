@@ -141,8 +141,12 @@ class DiaryGenerator:
             for day in week:
                 self.c.rect(x, y - row_height, col_width, row_height)
                 if day != 0:
+                    date_obj = datetime.date(self.year, month, day)
+                    date_id = date_obj.strftime("day_%Y_%m_%d")
                     self.c.setFont("Helvetica", 10)
                     self.c.drawString(x + 2, y - 12, str(day))
+                    # Link to daily page
+                    self.c.linkRect("", date_id, (x, y - row_height, x + col_width, y))
                 x += col_width
             y -= row_height
 
@@ -158,6 +162,8 @@ class DiaryGenerator:
         self.c.showPage()
 
     def create_daily_page(self, date_obj, quote_data):
+        date_id = date_obj.strftime("day_%Y_%m_%d")
+        self.c.bookmarkPage(date_id)
         quote, author = quote_data
         
         # --- Top Quote Section ---
@@ -295,6 +301,56 @@ class DiaryGenerator:
         
         self.c.showPage()
 
+    def create_year_calendar(self):
+        self.draw_header(f"{self.year} Yearly Overview")
+        
+        col_w = (self.width - 2*self.margin) / 3
+        row_h = (self.height - 6*cm) / 4
+        
+        start_y = self.height - 4.5 * cm
+        
+        for month in range(1, 13):
+            c = (month - 1) % 3
+            r = (month - 1) // 3
+            
+            x = self.margin + c * col_w
+            y = start_y - r * row_h
+            
+            self.draw_mini_month(x, y, col_w, row_h, month)
+            
+        self.c.showPage()
+
+    def draw_mini_month(self, x, y, width, height, month):
+        month_name = calendar.month_name[month]
+        self.c.setFont("Helvetica-Bold", 10)
+        self.c.drawCentredString(x + width/2, y - 0.4*cm, month_name)
+        
+        days_names = ["M", "T", "W", "T", "F", "S", "S"]
+        self.c.setFont("Helvetica", 7)
+        cell_w = width / 7
+        
+        names_y = y - 0.9 * cm
+        for i, day in enumerate(days_names):
+            self.c.drawCentredString(x + i*cell_w + cell_w/2, names_y, day)
+            
+        cal = calendar.monthcalendar(self.year, month)
+        cell_h = (height - 1.2*cm) / 6
+        
+        curr_y = names_y - 0.5 * cm
+        for week in cal:
+            for i, day in enumerate(week):
+                if day != 0:
+                    date_obj = datetime.date(self.year, month, day)
+                    date_id = date_obj.strftime("day_%Y_%m_%d")
+                    
+                    self.c.setFont("Helvetica", 7)
+                    self.c.drawCentredString(x + i*cell_w + cell_w/2, curr_y, str(day))
+                    
+                    # Link to daily page
+                    link_rect = (x + i*cell_w, curr_y - 2, x + (i+1)*cell_w, curr_y + 8)
+                    self.c.linkRect("", date_id, link_rect)
+            curr_y -= cell_h
+
     def generate(self):
         # 1. Fetch Quotes
         fetcher = QuoteFetcher()
@@ -305,6 +361,9 @@ class DiaryGenerator:
         
         # 2. Annual Vision Board
         self.create_annual_vision_board()
+        
+        # 3. Year Calendar
+        self.create_year_calendar()
         
         # Iterate through months
         for month in range(1, 13):
